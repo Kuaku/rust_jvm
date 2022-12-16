@@ -286,6 +286,13 @@ impl InstructionModule for IntegerModule {
                 frame.store_locale_variable(index, LocalFrame::Int(mom_value+i32::from(constant)));
                 super::JVMEvent::None
             }
-        }),]
+        }),
+        (172, super::Instruction {
+            name: String::from("ireturn"),
+            handler: |frame, _class_file| {
+                //TODO: Type checking
+                super::JVMEvent::Return(Some(frame.pop_operand()))
+            }
+        })]
     }
 }

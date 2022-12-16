@@ -48,8 +48,24 @@ impl ClassFile {
     pub fn get_name_of_member(&self, name_and_type_index: usize) -> String {
         let name_and_type = &self.constant_pool[name_and_type_index-1];
         match name_and_type {
-            const_type::ConstType::CONSTANT_NameAndType(name_index, descriptior_index) => {
+            const_type::ConstType::CONSTANT_NameAndType(name_index, _descriptior_index) => {
                 let member_name = &self.constant_pool[(*name_index-1) as  usize];
+                match member_name {
+                    const_type::ConstType::CONSTANT_Utf8(bytes) => {
+                        String::from_utf8(bytes.clone()).unwrap()
+                    }
+                    _ => {panic!("Given index is no utf8 constant!")}
+                }
+            }
+            _ => {panic!("Given index is no name and type constant!");}
+        }
+    }
+
+    pub fn get_description_of_member(&self, name_and_type_index: usize) -> String {
+        let name_and_type = &self.constant_pool[name_and_type_index-1];
+        match name_and_type {
+            const_type::ConstType::CONSTANT_NameAndType(_name_index, descriptior_index) => {
+                let member_name = &self.constant_pool[(*descriptior_index-1) as  usize];
                 match member_name {
                     const_type::ConstType::CONSTANT_Utf8(bytes) => {
                         String::from_utf8(bytes.clone()).unwrap()

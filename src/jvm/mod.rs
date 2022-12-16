@@ -42,7 +42,63 @@ impl JVM {
         while frame.code.has_next() {
             let opcode = frame.code.get_u1();
             if self.instructions.contains_key(&opcode) {
-                self.instructions.get(&opcode).unwrap().get_handler()(&mut frame, class_file);
+                let result = self.instructions.get(&opcode).unwrap().get_handler()(&mut frame, class_file);
+                match result {
+                    JVMEvent::InvokeMethod(invoke_index) => {
+                        let method_ref = class_file.get_constant(invoke_index);
+                        match method_ref {
+                            const_type::ConstType::CONSTANT_Methodref(class_index, type_and_name_index) => {
+                                let method_name = class_file.get_name_of_member(*type_and_name_index as usize);
+                                let class_name = class_file.get_name_of_class(*class_index as usize);
+                                let descriptor = class_file.get_description_of_member(*type_and_name_index as usize);
+                                let method = find_methods_by_name(class_file, Box::new(class_file), method_name.into_bytes())[0];
+                                let code_attribute = find_attributes_by_name(class_file, Box::new(method), "Code".as_bytes().to_vec())[0].to_code_attribute();
+                                let mut locale_variables = Vec::new();
+                                for i in 0..code_attribute.get_max_locals() {
+                                    locale_variables.push(LocalFrame::None);
+                                }
+                                let mut param_index = 1;
+                                let mut arg_index = 0;
+                                let mut d = 0;
+                                while &descriptor[param_index..param_index+1] != ")" {
+                                    let c = &descriptor[param_index..param_index+1];
+                                    if c == "[" {
+                                        d += 1;
+                                    } else {
+                                        let param = frame.pop_operand();
+                                        if d == 0 {
+                                            match c {
+                                                "I" => {
+                                                    match param {
+                                                        OperandFrame::Int(integer) => {
+                                                            locale_variables[arg_index] = LocalFrame::Int(integer);
+                                                        }
+                                                        _ => {panic!("The top Operand({:?}) was no Int!", param);}
+                                                    }
+                                                }
+                                                _ => {panic!("The descriptor {} is no implemented!", &descriptor[param_index..param_index+1])}
+                                            }
+                                        } else {
+                                            panic!("Can't handle arrays in decoraters!");
+                                        }
+                                        d = 0;
+                                        arg_index += 1;
+                                    }
+                                    param_index += 1;
+                                }
+                                let return_value = self.execute_method(&class_file, Frame { code: file::File::new(code_attribute.get_code()), operand_stack: vec![], locale_variables });
+                                if return_value.is_some() {
+                                    frame.push_operand(return_value.unwrap());
+                                }
+                            }
+                            _ => {panic!("The constant {:?} is not implemented for cannot be staticly invoked!", method_ref)}
+                        }
+                    }
+                    JVMEvent::Return(return_value) => {
+                        return return_value;
+                    }
+                    _ => {}
+                }
             } else {
                 panic!("The opcode({}) is not implemented!", opcode);
             }
@@ -63,7 +119,7 @@ pub enum LocalFrame {
     Int(i32),
     None
 }
-
+#[derive(Debug)]
 pub struct Frame {
     code: file::File,
     operand_stack: Vec<OperandFrame>,

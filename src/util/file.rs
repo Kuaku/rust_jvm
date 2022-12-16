@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct File {
     data: Vec<u8>,
     pointer: isize,

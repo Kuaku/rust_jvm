@@ -94,7 +94,14 @@ impl InstructionModule for StaticModule {
            handler: |frame, _class_file| {
                let offset = frame.get_u2() as i16;
                frame.offset_code((offset-3) as isize);
-               super::JVMEvent::Return(None)
+               super::JVMEvent::None
+           }
+       }),
+       (184, super::Instruction {
+           name: String::from("invokestatic"),
+           handler: |frame, _class_file| {
+               let index = frame.get_u2() as i16;
+               super::JVMEvent::InvokeMethod(index as usize)
            }
        }),]
     }
