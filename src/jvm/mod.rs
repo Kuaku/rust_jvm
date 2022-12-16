@@ -14,6 +14,7 @@ impl JVM {
         JVM { instructions: HashMap::new() }
     }
 
+    #[allow(dead_code)]
     pub fn print_whole_instruction_set(&self) {
         println!("Instructions: ");
         for (opcode, instruction) in &self.instructions {
@@ -32,7 +33,7 @@ impl JVM {
     pub fn execute_main_method(&mut self, class_file: &ClassFile, main_method: &method_info::MethodInfo) {
         let code_attribute = find_attributes_by_name(class_file, Box::new(main_method), "Code".as_bytes().to_vec())[0].to_code_attribute();
         let mut locale_variables = Vec::new();
-        for i in 0..code_attribute.get_max_locals() {
+        for _i in 0..code_attribute.get_max_locals() {
             locale_variables.push(LocalFrame::None);
         }
         self.execute_method(class_file, Frame { code: file::File::new(code_attribute.get_code()), operand_stack: vec![], locale_variables });
@@ -47,14 +48,14 @@ impl JVM {
                     JVMEvent::InvokeMethod(invoke_index) => {
                         let method_ref = class_file.get_constant(invoke_index);
                         match method_ref {
-                            const_type::ConstType::CONSTANT_Methodref(class_index, type_and_name_index) => {
+                            const_type::ConstType::ConstantMethodref(class_index, type_and_name_index) => {
                                 let method_name = class_file.get_name_of_member(*type_and_name_index as usize);
-                                let class_name = class_file.get_name_of_class(*class_index as usize);
+                                let _class_name = class_file.get_name_of_class(*class_index as usize);
                                 let descriptor = class_file.get_description_of_member(*type_and_name_index as usize);
                                 let method = find_methods_by_name(class_file, Box::new(class_file), method_name.into_bytes())[0];
                                 let code_attribute = find_attributes_by_name(class_file, Box::new(method), "Code".as_bytes().to_vec())[0].to_code_attribute();
                                 let mut locale_variables = Vec::new();
-                                for i in 0..code_attribute.get_max_locals() {
+                                for _i in 0..code_attribute.get_max_locals() {
                                     locale_variables.push(LocalFrame::None);
                                 }
                                 let mut param_index = 1;
@@ -186,7 +187,7 @@ pub trait ContainsAttributes {
 pub fn find_methods_by_name<'a>(class_file: &ClassFile, data: Box<&'a dyn ContainsMethods>, name: Vec<u8>) -> Vec<&'a method_info::MethodInfo> {
     data.get_methods().iter().filter(|f| {
         match &class_file.get_constant(f.get_name_index() as usize) {
-            const_type::ConstType::CONSTANT_Utf8(bytes) => {
+            const_type::ConstType::ConstantUtf8(bytes) => {
                 name == *bytes
             }
             _ => {false}
@@ -198,7 +199,7 @@ pub fn find_methods_by_name<'a>(class_file: &ClassFile, data: Box<&'a dyn Contai
 pub fn find_attributes_by_name<'a>(class_file: &ClassFile, data: Box<&'a dyn ContainsAttributes>, name: Vec<u8>) -> Vec<&'a attribute_info::AttributeInfo> {
     data.get_attributes().iter().filter(|f| {
         match &class_file.get_constant(f.get_attribute_name_index() as usize) {
-            &const_type::ConstType::CONSTANT_Utf8(bytes) => {
+            &const_type::ConstType::ConstantUtf8(bytes) => {
                 name == *bytes
             }
             _ => {false}

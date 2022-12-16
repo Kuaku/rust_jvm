@@ -14,6 +14,21 @@ impl MethodInfo {
     pub fn get_name_index(&self) -> u16 {
         self.name_index
     }
+
+    #[allow(dead_code)]
+    pub fn get_access_flags(&self) -> u16 {
+        self.access_flags
+    }
+
+    #[allow(dead_code)]
+    pub fn get_descriptor_index(&self) -> u16 {
+        self.descriptor_index
+    }
+
+    #[allow(dead_code)]
+    pub fn get_attributes(&self) -> Vec<attribute_info::AttributeInfo> {
+        self.attributes.clone()
+    }
 }
 
 impl ContainsAttributes for MethodInfo {
@@ -32,5 +47,5 @@ pub fn parse_file(file: &mut file::File) -> MethodInfo {
 }
 
 pub fn parse_range(file: &mut file::File, range: usize) -> Vec<MethodInfo> {
-    (0..range).into_iter().map(|f| {parse_file(file)}).collect()
+    (0..range).into_iter().map(|_f| {parse_file(file)}).collect()
 }

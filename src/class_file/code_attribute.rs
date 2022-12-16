@@ -19,6 +19,21 @@ impl CodeAttribute {
     pub fn get_max_locals(&self) -> u16 {
         self.max_locals
     }
+
+    #[allow(dead_code)]
+    pub fn get_max_stack(&self) -> u16 {
+        self.max_stack
+    }
+
+    #[allow(dead_code)]
+    pub fn get_exception_table(&self) -> Vec<exception_table_entry::ExceptionTableEntry> {
+        self.exception_table.clone()
+    }
+    
+    #[allow(dead_code)]
+    pub fn get_attributes(&self) -> Vec<attribute_info::AttributeInfo> {
+        self.attributes.clone()
+    }
 }
 
 pub fn parse_file(file: &mut file::File) -> CodeAttribute {

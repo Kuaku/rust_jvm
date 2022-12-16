@@ -1,4 +1,4 @@
-use super::{InstructionModule, Frame, OperandFrame};
+use super::{InstructionModule, OperandFrame};
 use crate::class_file::const_type;
 
 pub struct StaticModule;
@@ -11,7 +11,7 @@ impl InstructionModule for StaticModule {
                let static_index = frame.get_u2() as usize;
                let field_ref = class_file.get_constant(static_index);
                match field_ref {
-                   &const_type::ConstType::CONSTANT_Fieldref(class_index, name_and_type_index) => {
+                   &const_type::ConstType::ConstantFieldref(class_index, name_and_type_index) => {
                        let class_name = class_file.get_name_of_class(class_index as usize);
                        let name_of_member = class_file.get_name_of_member(name_and_type_index as usize);
                        if class_name == String::from("java/lang/System") && name_of_member == String::from("out") {
@@ -39,7 +39,7 @@ impl InstructionModule for StaticModule {
                let invoke_index = frame.get_u2() as usize;
                let method_ref = class_file.get_constant(invoke_index);
                match method_ref {
-                   &const_type::ConstType::CONSTANT_Methodref(class_index, name_and_type_index) => {
+                   &const_type::ConstType::ConstantMethodref(class_index, name_and_type_index) => {
                        let class_name = class_file.get_name_of_class(class_index as usize);
                        let name_of_member = class_file.get_name_of_member(name_and_type_index as usize);
                        if class_name == String::from("java/io/PrintStream") && name_of_member == String::from("println") {
@@ -57,10 +57,10 @@ impl InstructionModule for StaticModule {
                            match param1 {
                                OperandFrame::Constant(constant) => {
                                    match constant {
-                                       const_type::ConstType::CONSTANT_String(string_index) => {
+                                       const_type::ConstType::ConstantString(string_index) => {
                                            let utf8_const = &class_file.get_constant(string_index as usize);
                                            match utf8_const {
-                                               const_type::ConstType::CONSTANT_Utf8(bytes)  => {
+                                               const_type::ConstType::ConstantUtf8(bytes)  => {
                                                    println!("{}", String::from_utf8(bytes.clone()).unwrap());
                                                }
                                                _ => {panic!("String constant is not pointing to a utf8 constant!")}

@@ -1,5 +1,4 @@
 use super::{InstructionModule, Frame, OperandFrame, LocalFrame};
-use crate::class_file::const_type;
 
 pub struct IntegerModule;
 

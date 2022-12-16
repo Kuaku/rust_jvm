@@ -1,7 +1,7 @@
 use super::file;
 use super::code_attribute;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AttributeInfo {
     attribute_name_index: u16,
     info: Vec<u8>,
@@ -25,5 +25,5 @@ pub fn parse_file(file: &mut file::File) -> AttributeInfo {
 }
 
 pub fn parse_range(file: &mut file::File, range: usize) -> Vec<AttributeInfo> {
-    (0..range).into_iter().map(|f| {parse_file(file)}).collect()
+    (0..range).into_iter().map(|_f| {parse_file(file)}).collect()
 }

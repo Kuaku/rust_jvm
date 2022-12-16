@@ -15,6 +15,7 @@ impl File {
         self.pointer += offset;
     }
 
+    #[allow(dead_code)]
     pub fn get_pointer(&mut self) -> usize {
         self.pointer as usize
     }
@@ -44,7 +45,7 @@ impl File {
     }
 
     pub fn get_range_u2(&mut self, range: usize) -> Vec<u16> {
-        (0..range).into_iter().map(|f| {self.get_u2()}).collect()
+        (0..range).into_iter().map(|_f| {self.get_u2()}).collect()
     }
 
     pub fn has_next(&mut self) -> bool {
