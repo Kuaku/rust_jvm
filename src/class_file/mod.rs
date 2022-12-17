@@ -88,7 +88,7 @@ impl ContainsMethods for ClassFile {
 }
 
 pub fn parse_file(file: &mut file::File) -> ClassFile {
-    let magic =file.get_u4();
+    let magic = file.get_u4();
     let minor_version = file.get_u2();
     let major_version = file.get_u2();
     let constant_count = file.get_u2() as usize;

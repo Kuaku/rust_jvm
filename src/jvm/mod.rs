@@ -6,12 +6,13 @@ use super::util::file;
 
 
 pub struct JVM {
-    instructions: HashMap<u8, Instruction>
+    instructions: HashMap<u8, Instruction>,
+    debug: bool
 }
 
 impl JVM {
     pub fn new() -> JVM {
-        JVM { instructions: HashMap::new() }
+        JVM { instructions: HashMap::new(), debug: true }
     }
 
     #[allow(dead_code)]
@@ -32,6 +33,7 @@ impl JVM {
 
     pub fn execute_main_method(&mut self, class_file: &ClassFile, main_method: &method_info::MethodInfo) {
         let code_attribute = find_attributes_by_name(class_file, Box::new(main_method), "Code".as_bytes().to_vec())[0].to_code_attribute();
+        println!("Code: {:?}", code_attribute.get_code());
         let mut locale_variables = Vec::new();
         for _i in 0..code_attribute.get_max_locals() {
             locale_variables.push(LocalFrame::None);
@@ -43,7 +45,11 @@ impl JVM {
         while frame.code.has_next() {
             let opcode = frame.code.get_u1();
             if self.instructions.contains_key(&opcode) {
-                let result = self.instructions.get(&opcode).unwrap().get_handler()(&mut frame, class_file);
+                let instruction = self.instructions.get(&opcode).unwrap();
+                if self.debug {
+                    println!("Instruction: {}({})", instruction.name, opcode);
+                }
+                let result = instruction.get_handler()(&mut frame, class_file);
                 match result {
                     JVMEvent::InvokeMethod(invoke_index) => {
                         let method_ref = class_file.get_constant(invoke_index);
